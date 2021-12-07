@@ -1,0 +1,34 @@
+
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <link rel="stylesheet" href="style.css" />
+  <!-- The "title" is what shows up on the tab or bookmark -->
+  <title>Popcorn Machine</title>
+</head>
+<body>
+
+<div id="content">
+<h1>The Popcorn Machine</h1>
+
+<form action="/monitor">
+How much popcorn?
+<!-- Each input has several attributes:
+     id: What this thing is called in the HTML page, if we want to style it
+         with CSS or control it with Javascript.
+     name: What the data is called when we send it to the server
+     value: The text that the thing should start with when we load the page
+
+     These don't have to be unique; making the name and id the same is totally
+     fine unless it confuses you.
+-->
+<input type="text" name="quantity" value="Enter a value..."/>
+<br/>
+<input type="submit" id="makepopcorn" value="Make popcorn!"/>
+</form>
+
+</div>
+
+</body>
+</html>
