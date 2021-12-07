@@ -1,0 +1,22 @@
+
+#content{
+  /* Use these lines to center the content */
+  max-width: 800px;
+  margin-left: auto;
+  margin-right: auto;
+
+  /* padding is the amount of space between the content and the edge of the box */
+  padding: 10px;
+  background-color: #ffffb0;
+  border: 5px solid red;
+}
+
+#stop{
+  text-align: center;
+  font-size: 24px;
+  font-family: sans;
+  color: white;
+  background-color: red;
+  padding: 10px;
+  margin: 10px;
+}
