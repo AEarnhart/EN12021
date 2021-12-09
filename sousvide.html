@@ -1,0 +1,58 @@
+<!-- Thanks to Professor Bell and his Popcorn Machine for providing the framework for this project! -->
+
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <link rel="stylesheet" href="style.css" />
+  <!-- The "title" is what shows up on the tab or bookmark -->
+  <title>Sous Vide Cooker</title>
+</head>
+<body>
+
+<div id="content">
+<h1>Sous Vide Cooker</h1>
+
+<form oninput="cook_temp_output.value=say_if_cooking_temp_set(cook_temp.value)">
+  Set temperature (°F):
+  <input type="text" id="cook_temp" name="cook_temp" placeholder="Enter the temperature..." />
+  <br/>
+  Set cooking time (minutes):
+  <input type="text" id="cook_time" name="cook_time" placeholder="Enter the cooking time..." />
+  <br/>
+  <input type="button" id="start_cooking" name="start_cooking" value="Start Cooking!" onclick="say_cooking()"/>
+  <br/>
+  <br/>
+  Cooking temperature: 
+  <output name="cook_temp_output">Cooking temperature not set</output>
+  <br/>
+  Remaining cooking time: 
+  <output name="cook_time_output">Cooking time not set</output>
+</form>
+
+<p id="is_cooking">Not cooking now...</p>
+
+<script>
+  function say_cooking() { 
+    document.getElementById("is_cooking").innerHTML = "Cooking...";
+  }
+</script>
+
+<script>
+  function say_if_cooking_temp_set(cook_temp_value) { 
+    if (!isNaN(cook_temp_value)) {
+      if (cook_temp_value == "") {
+          return "Cooking temperature not set";
+      } else {
+          return cook_temp_value;
+      }
+    } else {
+      return "Please enter a number!";
+    }
+  }
+</script>
+
+</div>
+
+</body>
+</html>
