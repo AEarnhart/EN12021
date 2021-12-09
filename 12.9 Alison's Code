@@ -1,0 +1,129 @@
+#Just get the smart plug and the thermocouple to regulate temp
+# MAC ID for the smart plug is: BF5BFD
+
+import time
+from time import sleep
+from machine import Pin, I2C
+from max6675 import MAX6675          # for the thermocouple
+import network                       # for wifi connectivity
+from umqttsimple import MQTTClient   # for sending and receiving data, controlling the smart plug
+import ssd1306
+from microdot import Microdot, Response
+# from simpletemplate import render_template
+
+# this sets up the OLED display
+i2c = I2C(0, scl=Pin(18), sda=Pin(19))
+display = ssd1306.SSD1306_I2C(128, 64, i2c)
+
+# this sets up the thermocouple
+test = MAX6675(cs=Pin(15), sck=Pin(2), so=Pin(4))
+
+display.fill(0)
+count = 0
+start = 0
+waiting = 1
+preheat = 2
+cooking = 3
+state = waiting
+goaltemp = 27     # goal temperature to be reached to switch from heating mode to cooking mode
+goaltime = 10     # cook time in seconds
+#startbutton = 1  # um, this can be a variable that monitors the "start cooking" on the website. Maybe?
+
+red = Pin(22, Pin.OUT)    # indicates we're in heating mode
+green = Pin(23, Pin.OUT)  # indicates we're in cooking mode
+
+red.off()
+green.off()
+
+# Make sure we're connected to the network
+wlan = network.WLAN(network.STA_IF)
+if not wlan.isconnected():
+    # If we're not connected, try to connect to Tufts_Wireless:
+    wlan.active(True)
+    ssid = "Tufts_Wireless"
+    print("Connecting to {}...".format(ssid))
+    wlan.connect(ssid)
+    while not wlan.isconnected():
+        print('.', end='')
+        sleep(1)
+
+# Print out our IP address so we know where to point the web browser!
+ip_address = wlan.ifconfig()[0]
+print("Site will be accessible at http://{}".format(ip_address))
+
+# Set up our connection to the MQTT server
+mqttclient = MQTTClient("esp32-sousvide", "en1-pi.eecs.tufts.edu")
+mqttclient.connect()
+SMARTPLUG_TOPIC = "ESPURNA-BF5BFD/relay/0/set"
+
+# Set up the microdot server
+app = Microdot()
+
+while True:
+    
+    if state == waiting:
+        red.off()
+        green.off()
+        #This is where we use request.args to monitor the website for input
+        #Once we have values for goaltemp and goaltime and the "start cooking" button is pressed, then we move to the preheating state
+        #if goaltemp = True and goaltime = True and startbutton = True  #this is probably not the right way to do it...
+        state = preheat
+    
+    elif state == preheat:
+        temp = test.read()
+        
+        if temp >= goaltemp:
+            state = cooking
+            start = time.ticks_ms()     # this designates when the countdown should begin
+            count = goaltime
+        elif temp < goaltemp:
+            red.on()
+            green.off()
+            #mqttclient.publish(SMARTPLUG_TOPIC, '1') # this should turn on the smart plug
+            current_time = time.time()
+            temp = test.read()
+            print("{},{},\n".format(current_time, temp))   #prints to computer for now...
+            #add some code here to display "heating in progress" and the current temp on the website
+            sleep(1)
+            
+            
+    elif state == cooking:
+        temp = test.read()
+        green.on()
+        red.off()
+        
+        timer = count - ((time.ticks_ms() - start) / 1000)  # variable designated as "timer" starts counting down, converting ms to seconds
+        timer = int(timer)
+        
+        display.fill(0)
+        display.text(str(timer), 52, 29)      # OLED displays the current timer value for now
+        display.show()
+        
+        current_time = time.time()
+        temp = test.read()
+        print("{},{},\n".format(current_time, temp))   #prints to computer for now...
+        # add code to display timer and currenet temp on website
+        
+        if temp < goaltemp:
+            #mqttclient.publish(SMARTPLUG_TOPIC, '1') # this should turn on the smart plug
+            print("turn back on!")
+            red.on()
+            green.off()
+        elif temp >= goaltemp:
+            #mqttclient.publish(SMARTPLUG_TOPIC, '0') # this should turn off the smart plug
+            print("turn it off!")
+            red.off()
+            green.on()
+        
+            
+        if timer <= 0:
+            #mqttclient.publish(SMARTPLUG_TOPIC, '0') # this should turn off the smart plug
+            display.fill(0)
+            display.text(("DONE"), 52, 29)      # OLED displays the current timer value
+            display.show()
+            count = 0
+            sleep(5)
+            state = waiting
+            #how do we want to tell the user it's done? Some kind of notification on the webpage?
+
+            
