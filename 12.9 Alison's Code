@@ -18,7 +18,7 @@ COOKING = 3
 DONE = 4
 state = WAITING
 goaltemp = 22     # goal temperature to be reached to switch from heating mode to cooking mode
-goaltime = 18     # cook time in seconds
+goaltime = 60     # cook time in seconds
 #startbutton = 1  # um, this can be a variable that monitors the "start cooking" on the website. Maybe?
 
 red = Pin(22, Pin.OUT)    # indicates we're in heating mode
@@ -86,6 +86,7 @@ while True:
         current_time = time.time()
         temp = test.read()
         print("{},{},\n".format(current_time, temp))   #prints to computer for now...
+        sleep(1)
         # add code to display timer and currenet temp on website
         
         timer = count - ((time.ticks_ms() - start) / 1000)  # variable designated as "timer" starts counting down, converting ms to seconds
